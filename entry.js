@@ -1,7 +1,7 @@
-const GeneralBundler = require('./bundler/general-bundler');
+const Bundler = require('./bundler/bundler-general');
 const Transpiler = require('./transpiler/transpiler');
 const TemplateBundler = require('./template-bundler/template-bundler');
 
-exports.GeneralBundler = GeneralBundler;
+exports.Bundler = Bundler;
 exports.Transpiler = Transpiler;
 exports.TemplateBundler = TemplateBundler;
