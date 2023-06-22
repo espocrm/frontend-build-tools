@@ -62,6 +62,7 @@ class Bundler {
      *     lookupPatterns?: string[],
      *     ignoreFullPathFiles?: string[],
      *     dependentOn?: string[],
+     *     mapDependencies?: boolean,
      *     libs: {
      *         src?: string,
      *         bundle?: boolean,
@@ -104,6 +105,7 @@ class Bundler {
             ignoreFullPathFiles,
             notBundledModules,
             params.dependentOn || null,
+            params.mapDependencies
         );
 
         let contents = '';
@@ -168,6 +170,7 @@ class Bundler {
      * @param {string[]} ignoreFiles
      * @param {string[]} notBundledModules
      * @param {string[]|null} dependentOn
+     * @param {boolean} [mapDependencies]
      * @return {{
      *     files: string[],
      *     depModules: string[],
@@ -180,7 +183,8 @@ class Bundler {
         ignoreLibs,
         ignoreFiles,
         notBundledModules,
-        dependentOn
+        dependentOn,
+        mapDependencies
     ) {
         /** @var {Object.<string, string[]>} */
         let map = {};
@@ -266,12 +270,18 @@ class Bundler {
         modules = modules.filter(item => !discardedModules.includes(item));
 
         let modulePaths = modules.map(name => {
+            if (!moduleFileMap[name] && mapDependencies) {
+                return null;
+            }
+
             if (!moduleFileMap[name]) {
                 throw Error(`Can't obtain ${name}. Might be missing in lookupPatterns.`);
             }
 
             return moduleFileMap[name];
         });
+
+        modulePaths = modulePaths.filter(path => path !== null);
 
         return {
             files: standalonePathList.concat(modulePaths),

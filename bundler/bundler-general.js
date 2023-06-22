@@ -196,6 +196,7 @@ class BundlerGeneral {
                 ignoreFullPathFiles: ignoreFiles,
                 ignoreFiles: params.ignoreFiles,
                 dependentOn: params.dependentOn,
+                mapDependencies: params.mapDependencies,
             });
 
             contents += data.contents;
