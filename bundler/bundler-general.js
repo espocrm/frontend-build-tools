@@ -57,14 +57,14 @@ class BundlerGeneral {
      *    files?: {
      *        src: string,
      *    }[]
-     *  }[]} libs
+     *  }[]} [libs]
      *  @param {string} [filePattern]
      */
     constructor(config, libs, filePattern) {
         this.config = config;
-        this.libs = libs;
+        this.libs = libs ?? [];
         this.mainBundleFiles = [];
-        this.filePattern = filePattern || 'client/lib/espo-{*}.min.js';
+        this.filePattern = filePattern || 'client/lib/espo-{*}.js';
 
         if (!this.config.order.length) {
             throw new Error(`No chunks specified in 'order' param.`);
