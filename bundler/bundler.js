@@ -105,7 +105,8 @@ class Bundler {
             ignoreFullPathFiles,
             notBundledModules,
             params.dependentOn || null,
-            params.mapDependencies
+            params.mapDependencies,
+            params.libs ?? []
         );
 
         let contents = '';
@@ -171,6 +172,7 @@ class Bundler {
      * @param {string[]} notBundledModules
      * @param {string[]|null} dependentOn
      * @param {boolean} [mapDependencies]
+     * @param {string[]} libs
      * @return {{
      *     files: string[],
      *     depModules: string[],
@@ -184,7 +186,8 @@ class Bundler {
         ignoreFiles,
         notBundledModules,
         dependentOn,
-        mapDependencies
+        mapDependencies,
+        libs
     ) {
         /** @var {Object.<string, string[]>} */
         let map = {};
@@ -274,11 +277,19 @@ class Bundler {
                 return null;
             }
 
-            if (!moduleFileMap[name]) {
-                throw Error(`Can't obtain ${name}. Might be missing in lookupPatterns.`);
+            if (moduleFileMap[name]) {
+                return moduleFileMap[name];
             }
 
-            return moduleFileMap[name];
+            for (let item of libs) {
+                let libId = item.amdId ?? item.key;
+
+                if (libId && libId === name) {
+                    return null;
+                }
+            }
+
+            throw Error(`Can't obtain ${name}. Might be missing in lookupPatterns.`);
         });
 
         modulePaths = modulePaths.filter(path => path !== null);
