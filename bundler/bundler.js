@@ -66,7 +66,7 @@ class Bundler {
      *     libs: {
      *         src?: string,
      *         bundle?: boolean,
-     *         key?: string,
+     *         amdId?: string,
      *     }[],
      * }} params
      * @return {{
@@ -91,8 +91,8 @@ class Bundler {
         let allFiles = this.#obtainFiles(params.lookupPatterns || params.patterns);
 
         let ignoreLibs = params.libs
-            .filter(item => item.key && !item.bundle)
-            .map(item => 'lib!' + item.key)
+            .filter(item => item.amdId && !item.bundle)
+            .map(item => 'lib!' + item.amdId)
             .filter(item => !(params.dependentOn || []).includes(item));
 
         let notBundledModules = [];
@@ -282,7 +282,7 @@ class Bundler {
             }
 
             for (let item of libs) {
-                let libId = item.amdId ?? item.key;
+                let libId = item.amdId;
 
                 if (libId && libId === name) {
                     return null;

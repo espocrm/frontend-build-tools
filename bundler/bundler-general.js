@@ -53,7 +53,7 @@ class BundlerGeneral {
      * @param {{
      *    src?: string,
      *    bundle?: boolean,
-     *    key?: string,
+     *    amdId?: string,
      *    files?: {
      *        src: string,
      *    }[]
