@@ -92,7 +92,7 @@ class Bundler {
 
         let ignoreLibs = params.libs
             .filter(item => item.amdId && !item.bundle)
-            .map(item => 'lib!' + item.amdId)
+            .map(item => item.amdId)
             .filter(item => !(params.dependentOn || []).includes(item));
 
         let notBundledModules = [];
@@ -367,8 +367,36 @@ class Bundler {
             return;
         }
 
+        /**
+         * @param {string} depName
+         * @return {boolean}
+         */
+        const isLib = depName => {
+            if (depName.startsWith('lib!')) {
+                depName = depName.slice(4);
+            }
+
+            return ignoreLibs.includes(depName);
+        }
+
+        /**
+         * @param {string} depName
+         * @return {boolean}
+         */
+        const isDependentOnMatched = depName => {
+            if (!dependentOn) {
+                return false;
+            }
+
+            if (depName.startsWith('lib!')) {
+                depName = depName.slice(4);
+            }
+
+            return dependentOn.includes(depName);
+        }
+
         for (let depName of deps) {
-            if (ignoreLibs.includes(depName)) {
+            if (isLib(depName)) {
                 path
                     .filter(item => !discardedModules.includes(item))
                     .forEach(item => discardedModules.push(item));
@@ -376,7 +404,7 @@ class Bundler {
                 return;
             }
 
-            if (dependentOn && dependentOn.includes(depName)) {
+            if (isDependentOnMatched(depName)) {
                 path
                     .filter(item => !pickedModules.includes(item))
                     .forEach(item => pickedModules.push(item));
@@ -384,7 +412,7 @@ class Bundler {
         }
 
         deps.forEach(depName => {
-            if (depName.includes('!')) {
+            if (isLib(depName)) {
                 return;
             }
 
