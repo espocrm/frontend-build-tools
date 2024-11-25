@@ -91,7 +91,10 @@ class Transpiler {
         const module = this.#obtainModuleName(file);
 
         const result = babelCore.transformSync(this.#getContents(file), {
-            plugins: ['@babel/plugin-transform-modules-amd'],
+            plugins: [
+                '@babel/plugin-transform-modules-amd',
+                '@babel/plugin-proposal-decorators',
+            ],
             moduleId: module,
             sourceMaps: true,
         });
