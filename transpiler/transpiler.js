@@ -93,7 +93,10 @@ class Transpiler {
         const result = babelCore.transformSync(this.#getContents(file), {
             plugins: [
                 '@babel/plugin-transform-modules-amd',
-                '@babel/plugin-proposal-decorators',
+                [
+                    '@babel/plugin-proposal-decorators',
+                    {version: '2023-11'}
+                ],
             ],
             moduleId: module,
             sourceMaps: true,
