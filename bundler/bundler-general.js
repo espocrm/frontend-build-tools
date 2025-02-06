@@ -38,6 +38,7 @@ class BundlerGeneral {
      *   chunks: Object.<string, {
      *     files?: string[],
      *     patterns?: string[],
+     *     ignorePatterns: string[],
      *     ignoreFiles?: string[],
      *     lookupPatterns?: string[],
      *     templatePatterns?: string[],
@@ -191,6 +192,7 @@ class BundlerGeneral {
                 name: name,
                 files: params.files,
                 patterns: patterns,
+                ignorePatterns: params.ignorePatterns,
                 lookupPatterns: lookupPatterns,
                 libs: this.libs,
                 ignoreFullPathFiles: ignoreFiles,

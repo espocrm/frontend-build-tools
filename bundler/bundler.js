@@ -58,6 +58,7 @@ class Bundler {
      *     name: string,
      *     files?: string[],
      *     patterns: string[],
+     *     ignorePatterns: ?string[],
      *     ignoreFiles?: string[],
      *     lookupPatterns?: string[],
      *     ignoreFullPathFiles?: string[],
@@ -84,7 +85,7 @@ class Bundler {
 
         let fullPathFiles = []
             .concat(this.#normalizePaths(params.files || []))
-            .concat(this.#obtainFiles(params.patterns, [...files, ...ignoreFiles]))
+            .concat(this.#obtainFiles(params.patterns, [...files, ...ignoreFiles], params.ignorePatterns))
             // @todo Check if working.
             .filter(file => !ignoreFullPathFiles.includes(file));
 
@@ -138,14 +139,16 @@ class Bundler {
     /**
      * @param {string[]} patterns
      * @param {string[]} [ignoreFiles]
+     * @param {string[]} [ignorePatterns]
      * @return {string[]}
      */
-    #obtainFiles(patterns, ignoreFiles) {
+    #obtainFiles(patterns, ignoreFiles, ignorePatterns) {
         let files = [];
         ignoreFiles = this.#normalizePaths(ignoreFiles || []);
+        ignorePatterns = this.#normalizePaths(ignorePatterns || []);
 
         this.#normalizePaths(patterns).forEach(pattern => {
-            let itemFiles = globSync(pattern, {})
+            let itemFiles = globSync(pattern, {ignore: ignorePatterns})
                 .map(file => file.replaceAll('\\', '/'))
                 .filter(file => !ignoreFiles.includes(file));
 
