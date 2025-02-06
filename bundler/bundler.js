@@ -76,6 +76,7 @@ class Bundler {
      *     modules: string[],
      *     notBundledModules: string[],
      *     dependencyModules: string[],
+     *     directDependencyModules: string[],
      * }}
      */
     bundle(params) {
@@ -98,7 +99,7 @@ class Bundler {
 
         let notBundledModules = [];
 
-        let {files: sortedFiles, depModules} = this.#sortFiles(
+        const {files: sortedFiles, depModules, directDepModules} = this.#sortFiles(
             params.name,
             fullPathFiles,
             allFiles,
@@ -115,7 +116,9 @@ class Bundler {
         this.#mapToTraspiledFiles(sortedFiles)
             .forEach(file => contents += this.#normalizeSourceFile(file) + '\n');
 
-        let modules = sortedFiles.map(file => this.#obtainModuleName(file));
+        const modules = sortedFiles.map(file => this.#obtainModuleName(file));
+
+        const filteredDirectDepModules = directDepModules.filter(m => !modules.includes(m));
 
         return {
             contents: contents,
@@ -123,6 +126,7 @@ class Bundler {
             modules: modules,
             notBundledModules: notBundledModules,
             dependencyModules: depModules,
+            directDependencyModules: filteredDirectDepModules,
         };
     }
 
@@ -179,6 +183,7 @@ class Bundler {
      * @return {{
      *     files: string[],
      *     depModules: string[],
+     *     directDepModules: string[],
      * }}
      */
     #sortFiles(
@@ -193,10 +198,14 @@ class Bundler {
         libs
     ) {
         /** @var {Object.<string, string[]>} */
-        let map = {};
+        let moduleDepsMap = {};
         let standalonePathList = [];
         let modules = [];
         let moduleFileMap = {};
+
+        // All direct dependency modules, including dependency to this chunk.
+        // To be filtered in the upper method call.
+        const directDepModules = [];
 
         let ignoreModules = ignoreFiles.map(file => this.#obtainModuleName(file));
 
@@ -213,7 +222,7 @@ class Bundler {
                 return;
             }
 
-            map[data.name] = data.deps;
+            moduleDepsMap[data.name] = data.deps;
             moduleFileMap[data.name] = file;
 
             if (isTarget) {
@@ -226,7 +235,7 @@ class Bundler {
 
         modules
             .forEach(name => {
-                let deps = this.#obtainAllDeps(name, map);
+                const deps = this.#obtainAllDeps(name, moduleDepsMap);
 
                 deps
                     .filter(item => !modules.includes(item))
@@ -251,10 +260,10 @@ class Bundler {
         /** @var {string[]} */
         let pickedModules = [];
 
-        for (let module of modules) {
+        for (const module of modules) {
             this.#buildTreeItem(
                 module,
-                map,
+                moduleDepsMap,
                 depthMap,
                 ignoreLibs,
                 dependentOn,
@@ -275,6 +284,13 @@ class Bundler {
 
         modules = modules.filter(item => !discardedModules.includes(item));
 
+
+        for (const m of modules) {
+            (moduleDepsMap[m] || [])
+                .filter(it => !directDepModules.includes(it))
+                .forEach(it => directDepModules.push(it));
+        }
+
         let modulePaths = modules.map(name => {
             if (!moduleFileMap[name] && mapDependencies) {
                 return null;
@@ -284,8 +300,8 @@ class Bundler {
                 return moduleFileMap[name];
             }
 
-            for (let item of libs) {
-                let libId = item.amdId;
+            for (const item of libs) {
+                const libId = item.amdId;
 
                 if (libId && libId === name) {
                     return null;
@@ -300,6 +316,7 @@ class Bundler {
         return {
             files: standalonePathList.concat(modulePaths),
             depModules: allDepModules,
+            directDepModules: directDepModules,
         };
     }
 

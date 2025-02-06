@@ -84,10 +84,14 @@ class BundlerGeneral {
         let mainName = this.config.order[0];
 
         /** @var {Object.<string, string[]>} */
-        let notBundledMap = {};
+        const notBundledMap = {};
+        /** @var {Object.<string, string> */
+        const moduleChunkMap = {};
+        /** @var {Object.<string, string[]>} */
+        const chunkDirectDependenctModulesMap = {};
 
         this.config.order.forEach((name, i) => {
-            let data = this.#bundleChunk(name, i === 0, {
+            const data = this.#bundleChunk(name, i === 0, {
                 files: files,
                 templateFiles: templateFiles,
             });
@@ -100,13 +104,21 @@ class BundlerGeneral {
 
             console.log(`  Chunk '${name}' done, ${data.files.length} files.`)
 
+            chunkDirectDependenctModulesMap[name] = data.directDependencyModules;
+
+            if (i > 0) {
+                for (const m of data.modules) {
+                    moduleChunkMap[m] = name;
+                }
+            }
+
             if (i === 0 && this.config.order.length > 1) {
                 return;
             }
 
             data.modules.forEach(item => mapping[item] = name);
 
-            let bundleFile = this.filePattern.replace('{*}', name);
+            const bundleFile = this.filePattern.replace('{*}', name);
 
             let requires = [].concat(this.config.chunks[name].requires ?? []);
 
@@ -115,7 +127,7 @@ class BundlerGeneral {
             }
 
             if (requires.length) {
-                let part = JSON.stringify(requires);
+                const part = JSON.stringify(requires);
 
                 result[mainName] += `Espo.loader.mapBundleDependencies('${name}', ${part});\n`;
             }
@@ -123,7 +135,36 @@ class BundlerGeneral {
             result[mainName] += `Espo.loader.mapBundleFile('${name}', '${bundleFile}');\n`;
         });
 
-        let notBundledModules = [];
+        this.config.order.slice(1).forEach(name => {
+            const dependsOnChunks = [];
+            const deps = [];
+
+            for (const m of chunkDirectDependenctModulesMap[name]) {
+                const dependeeChunk = moduleChunkMap[m];
+
+                if (!dependeeChunk) {
+                    continue;
+                }
+
+                deps.push(m);
+
+                if (!dependsOnChunks.includes(dependeeChunk)) {
+                    dependsOnChunks.push(dependeeChunk);
+                }
+            }
+
+            if (dependsOnChunks.length) {
+                const part = dependsOnChunks.map(it => `'${it}'`).join(', ');
+
+                console.warn(`\nWarning: Chunk '${name}' depends on chunk(s) ${part}.`);
+                console.log('Depends on:');
+                console.log(deps);
+
+                console.log('\nRecommended to fix.');
+            }
+        });
+
+        const notBundledModules = [];
 
         this.config.order.forEach(name => {
             notBundledMap[name]
@@ -133,7 +174,7 @@ class BundlerGeneral {
         });
 
         if (notBundledModules.length) {
-            let part = notBundledModules
+            const part = notBundledModules
                 .map(item => ' ' + item)
                 .join('\n');
 
@@ -156,17 +197,20 @@ class BundlerGeneral {
      *   templateFiles: string[],
      *   notBundledModules: string[],
      *   dependencyModules: [],
+     *   directDependencyModules: string[],
      * }}
      */
     #bundleChunk(name, isMain, alreadyBundled) {
         let contents = '';
         let modules = [];
         let dependencyModules = [];
+        let directDependencyModules = [];
 
-        let params = this.config.chunks[name];
+        const params = this.config.chunks[name];
 
-        let patterns = params.patterns;
-        let lookupPatterns = []
+        const patterns = params.patterns;
+
+        const lookupPatterns = []
             .concat(this.config.lookupPatterns)
             .concat(params.lookupPatterns || []);
 
@@ -175,7 +219,7 @@ class BundlerGeneral {
         let notBundledModules = [];
 
         if (params.patterns) {
-            let bundler = new Bundler(
+            const bundler = new Bundler(
                 this.config.modulePaths,
                 this.config.basePath,
                 this.config.transpiledPath
@@ -188,7 +232,7 @@ class BundlerGeneral {
                 ignoreFiles = ignoreFiles.concat(alreadyBundled.files);
             }
 
-            let data = bundler.bundle({
+            const data = bundler.bundle({
                 name: name,
                 files: params.files,
                 patterns: patterns,
@@ -212,14 +256,15 @@ class BundlerGeneral {
 
             notBundledModules = data.notBundledModules;
             dependencyModules = data.dependencyModules;
+            directDependencyModules = data.directDependencyModules;
         }
 
         // Pre-compiled templates turned out to be slower if too many are bundled.
         // To be used sparingly.
         if (params.templatePatterns) {
-            let ignoreFiles = params.noDuplicates ? [].concat(alreadyBundled.templateFiles) : [];
+            const ignoreFiles = params.noDuplicates ? [].concat(alreadyBundled.templateFiles) : [];
 
-            let data = (new Precompiler()).precompile({
+            const data = (new Precompiler()).precompile({
                 patterns: params.templatePatterns,
                 modulePaths: this.config.modulePaths,
                 ignoreFiles: ignoreFiles,
@@ -236,6 +281,7 @@ class BundlerGeneral {
             templateFiles: bundledTemplateFiles,
             notBundledModules: notBundledModules,
             dependencyModules: dependencyModules,
+            directDependencyModules: directDependencyModules,
         };
     }
 }
