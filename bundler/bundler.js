@@ -80,24 +80,24 @@ class Bundler {
      * }}
      */
     bundle(params) {
-        let ignoreFullPathFiles = params.ignoreFullPathFiles ?? [];
-        let files = params.files ?? [];
-        let ignoreFiles = params.ignoreFiles ?? [];
+        const ignoreFullPathFiles = params.ignoreFullPathFiles ?? [];
+        const files = params.files ?? [];
+        const ignoreFiles = params.ignoreFiles ?? [];
 
-        let fullPathFiles = []
+        const fullPathFiles = []
             .concat(this.#normalizePaths(params.files || []))
             .concat(this.#obtainFiles(params.patterns, [...files, ...ignoreFiles], params.ignorePatterns))
             // @todo Check if working.
             .filter(file => !ignoreFullPathFiles.includes(file));
 
-        let allFiles = this.#obtainFiles(params.lookupPatterns || params.patterns);
+        const allFiles = this.#obtainFiles(params.lookupPatterns || params.patterns);
 
-        let ignoreLibs = params.libs
+        const ignoreLibs = params.libs
             .filter(item => item.amdId && !item.bundle)
             .map(item => item.amdId)
             .filter(item => !(params.dependentOn || []).includes(item));
 
-        let notBundledModules = [];
+        const notBundledModules = [];
 
         const {files: sortedFiles, depModules, directDepModules} = this.#sortFiles(
             params.name,
@@ -152,7 +152,7 @@ class Bundler {
         ignorePatterns = this.#normalizePaths(ignorePatterns || []);
 
         this.#normalizePaths(patterns).forEach(pattern => {
-            let itemFiles = globSync(pattern, {ignore: ignorePatterns})
+            const itemFiles = globSync(pattern, {ignore: ignorePatterns})
                 .map(file => file.replaceAll('\\', '/'))
                 .filter(file => !ignoreFiles.includes(file));
 
@@ -198,21 +198,21 @@ class Bundler {
         libs
     ) {
         /** @var {Object.<string, string[]>} */
-        let moduleDepsMap = {};
-        let standalonePathList = [];
+        const moduleDepsMap = {};
+        const standalonePathList = [];
         let modules = [];
-        let moduleFileMap = {};
+        const moduleFileMap = {};
 
         // All direct dependency modules, including dependency to this chunk.
         // To be filtered in the upper method call.
         const directDepModules = [];
 
-        let ignoreModules = ignoreFiles.map(file => this.#obtainModuleName(file));
+        const ignoreModules = ignoreFiles.map(file => this.#obtainModuleName(file));
 
         allFiles.forEach(file => {
-            let data = this.#obtainModuleData(file);
+            const data = this.#obtainModuleData(file);
 
-            let isTarget = files.includes(file);
+            const isTarget = files.includes(file);
 
             if (!data) {
                 if (isTarget) {
@@ -230,8 +230,8 @@ class Bundler {
             }
         });
 
-        let depModules = [];
-        let allDepModules = [];
+        const depModules = [];
+        const allDepModules = [];
 
         modules
             .forEach(name => {
@@ -254,11 +254,11 @@ class Bundler {
             .filter(module => !ignoreModules.includes(module));
 
         /** @var {string[]} */
-        let discardedModules = [];
+        const discardedModules = [];
         /** @var {Object.<string, number>} */
-        let depthMap = {};
+        const depthMap = {};
         /** @var {string[]} */
-        let pickedModules = [];
+        const pickedModules = [];
 
         for (const module of modules) {
             this.#buildTreeItem(
@@ -330,7 +330,7 @@ class Bundler {
             list = [];
         }
 
-        let deps = map[name] || [];
+        const deps = map[name] || [];
 
         deps.forEach(depName => {
             if (!list.includes(depName)) {
@@ -370,7 +370,7 @@ class Bundler {
         path
     ) {
         /** @var {string[]} */
-        let deps = map[module] || [];
+        const deps = map[module] || [];
         depth = depth || 0;
         path = [].concat(path || []);
 
@@ -415,7 +415,7 @@ class Bundler {
             return dependentOn.includes(depName);
         }
 
-        for (let depName of deps) {
+        for (const depName of deps) {
             if (isLib(depName)) {
                 path
                     .filter(item => !discardedModules.includes(item))
@@ -455,8 +455,8 @@ class Bundler {
      * @return string
      */
     #obtainModuleName(file) {
-        for (let mod in this.modPaths) {
-            let part = this.basePath + '/' + this.modPaths[mod] + '/src/';
+        for (const mod in this.modPaths) {
+            const part = this.basePath + '/' + this.modPaths[mod] + '/src/';
 
             if (file.indexOf(part) === 0) {
                 return `modules/${mod}/` + file.substring(part.length, file.length - 3);
@@ -475,17 +475,17 @@ class Bundler {
             return null;
         }
 
-        let moduleName = this.#obtainModuleName(path);
+        const moduleName = this.#obtainModuleName(path);
 
         const sourceCode = fs.readFileSync(path, 'utf-8');
 
-        let tsSourceFile = typescript.createSourceFile(
+        const tsSourceFile = typescript.createSourceFile(
             path,
             sourceCode,
             typescript.ScriptTarget.Latest
         );
 
-        let rootStatement = tsSourceFile.statements[0];
+        const rootStatement = tsSourceFile.statements[0];
 
         if (
             !rootStatement.expression ||
@@ -509,18 +509,18 @@ class Bundler {
             };
         }
 
-        let deps = [];
+        const deps = [];
 
-        let argumentList = rootStatement.expression.arguments;
+        const argumentList = rootStatement.expression.arguments;
 
-        for (let argument of argumentList.slice(0, 2)) {
+        for (const argument of argumentList.slice(0, 2)) {
             if (argument.elements) {
                 argument.elements.forEach(node => {
                     if (!node.text) {
                         return;
                     }
 
-                    let dep = this.#normalizeModModuleId(node.text);
+                    const dep = this.#normalizeModModuleId(node.text);
 
                     deps.push(dep);
                 });
@@ -565,17 +565,17 @@ class Bundler {
 
         let outputPath = id;
 
-        let dirParts = subjectId.split('/').slice(0, -1);
+        const dirParts = subjectId.split('/').slice(0, -1);
 
         if (id.slice(0, 2) === './') {
             outputPath = dirParts.join('/') + '/' + id.slice(2);
         }
 
-        let parts = outputPath.split('/');
+        const parts = outputPath.split('/');
 
         let up = 0;
 
-        for (let part of parts) {
+        for (const part of parts) {
             if (part === '..') {
                 up++;
 
@@ -605,7 +605,7 @@ class Bundler {
             return id;
         }
 
-        let [mod, part] = id.split(':');
+        const [mod, part] = id.split(':');
 
         return `modules/${mod}/` + part;
     }
@@ -619,15 +619,15 @@ class Bundler {
             return false;
         }
 
-        let startParts = [this.#getSrcPath()];
+        const startParts = [this.#getSrcPath()];
 
-        for (let mod in this.modPaths) {
-            let modPath = this.basePath + '/' + this.modPaths[mod] + '/src/';
+        for (const mod in this.modPaths) {
+            const modPath = this.basePath + '/' + this.modPaths[mod] + '/src/';
 
             startParts.push(modPath);
         }
 
-        for (let starPart of startParts) {
+        for (const starPart of startParts) {
             if (path.indexOf(starPart) === 0) {
                 return true;
             }
@@ -643,7 +643,7 @@ class Bundler {
      */
     #normalizeSourceFile(path) {
         let sourceCode = fs.readFileSync(path, 'utf-8');
-        let srcPath = this.#getSrcPath();
+        const srcPath = this.#getSrcPath();
 
         sourceCode = this.#stripSourceMappingUrl(sourceCode);
 
@@ -655,15 +655,15 @@ class Bundler {
             return sourceCode;
         }
 
-        let moduleName = path.slice(srcPath.length, -3);
+        const moduleName = path.slice(srcPath.length, -3);
 
-        let tsSourceFile = typescript.createSourceFile(
+        const tsSourceFile = typescript.createSourceFile(
             path,
             sourceCode,
             typescript.ScriptTarget.Latest
         );
 
-        let rootStatement = tsSourceFile.statements[0];
+        const rootStatement = tsSourceFile.statements[0];
 
         if (
             !rootStatement.expression ||
@@ -673,13 +673,13 @@ class Bundler {
             return sourceCode;
         }
 
-        let argumentList = rootStatement.expression.arguments;
+        const argumentList = rootStatement.expression.arguments;
 
         if (argumentList.length >= 3 || argumentList.length === 0) {
             return sourceCode;
         }
 
-        let moduleNameNode = typescript.createStringLiteral(moduleName);
+        const moduleNameNode = typescript.createStringLiteral(moduleName);
 
         if (argumentList.length === 1) {
             argumentList.unshift(
@@ -697,7 +697,7 @@ class Bundler {
      * @return {string}
      */
     #stripSourceMappingUrl(contents) {
-        let re = /^\/\/# sourceMappingURL.*/gm;
+        const re = /^\/\/# sourceMappingURL.*/gm;
 
         if (!contents.match(re)) {
             return contents;

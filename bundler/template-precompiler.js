@@ -48,14 +48,14 @@ class TemplatePrecompiler {
         let files = [];
 
         this.#normalizePaths(params.patterns).forEach(pattern => {
-            let itemFiles = globSync(pattern)
+            const itemFiles = globSync(pattern)
                 .map(file => file.replaceAll('\\', '/'));
 
             files = files.concat(itemFiles);
         });
 
-        let nameMap = {};
-        let compiledFiles = [];
+        const nameMap = {};
+        const compiledFiles = [];
 
         files.forEach(file => {
             let module = null;
@@ -64,8 +64,8 @@ class TemplatePrecompiler {
                 return;
             }
 
-            for (let itemModule in params.modulePaths) {
-                let path = baseBase + '/' + params.modulePaths[itemModule];
+            for (const itemModule in params.modulePaths) {
+                const path = baseBase + '/' + params.modulePaths[itemModule];
 
                 if (file.indexOf(path) === 0) {
                     module = itemModule;
@@ -94,11 +94,11 @@ class TemplatePrecompiler {
             'Espo.preCompiledTemplates = Espo.preCompiledTemplates || {};\n' +
             'Object.assign(Espo.preCompiledTemplates, {\n';
 
-        for (let file in nameMap) {
-            let name = nameMap[file];
+        for (const file in nameMap) {
+            const name = nameMap[file];
 
-            let templateContent = fs.readFileSync(file, 'utf8');
-            let compiled = Handlebars.precompile(templateContent);
+            const templateContent = fs.readFileSync(file, 'utf8');
+            const compiled = Handlebars.precompile(templateContent);
 
             contents += `'${name}': Handlebars.template(\n${compiled}\n),\n`;
         }

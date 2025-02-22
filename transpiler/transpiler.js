@@ -49,6 +49,7 @@ class Transpiler {
         this.contentsCache = {};
     }
 
+    // noinspection JSUnusedGlobalSymbols
     /**
      * @return {{
      *     transpiled: string[],
@@ -60,7 +61,7 @@ class Transpiler {
             .map(file => file.replaceAll('\\', '/'));
 
         if (this.file) {
-            let file = this.file.replaceAll('\\', '/');
+            const file = this.file.replaceAll('\\', '/');
 
             if (!allFiles.includes(file)) {
                 return {
@@ -72,8 +73,8 @@ class Transpiler {
             allFiles = [file];
         }
 
-        let files = allFiles.filter(file => this.#isToBeTranspiled(file));
-        let otherFiles = allFiles.filter(file => !files.includes(file));
+        const files = allFiles.filter(file => this.#isToBeTranspiled(file));
+        const otherFiles = allFiles.filter(file => !files.includes(file));
 
         files.forEach(file => this.#processFile(file));
         otherFiles.forEach(file => this.#copyFile(file));
@@ -102,7 +103,7 @@ class Transpiler {
             sourceMaps: true,
         });
 
-        let dir = this.#obtainTargetDir(module);
+        const dir = this.#obtainTargetDir(module);
 
         fs.mkdirSync(dir, {recursive: true});
 
@@ -112,10 +113,10 @@ class Transpiler {
             part = part.split(':')[1];
         }
 
-        let filePart = part.split('/').slice(-1)[0] + '.js';
-        let destFile = dir + filePart;
+        const filePart = part.split('/').slice(-1)[0] + '.js';
+        const destFile = dir + filePart;
 
-        let resultContent = result.code + `\n//# sourceMappingURL=${filePart}.map ;`;
+        const resultContent = result.code + `\n//# sourceMappingURL=${filePart}.map ;`;
 
         fs.writeFileSync(destFile, resultContent, 'utf-8');
         fs.writeFileSync(destFile + '.map', result.map.toString(), 'utf-8');
@@ -125,12 +126,12 @@ class Transpiler {
      * @param {string} file
      */
     #copyFile(file) {
-        let module = this.#obtainModuleName(file);
-        let dir = this.#obtainTargetDir(module);
+        const module = this.#obtainModuleName(file);
+        const dir = this.#obtainTargetDir(module);
 
         fs.mkdirSync(dir, {recursive: true});
 
-        let destFile = dir + file.split('/').slice(-1)[0];
+        const destFile = dir + file.split('/').slice(-1)[0];
 
         fs.mkdirSync(dir, {recursive: true});
         fs.copyFileSync(file, destFile);
@@ -147,20 +148,20 @@ class Transpiler {
         let path = module;
 
         if (module.includes(':')) {
-            let [mod, itemPath] = module.split(':');
+            const [mod, itemPath] = module.split(':');
 
             part = 'modules/' + mod + '/' + part;
 
             path = itemPath;
         }
         else if (module.startsWith('modules/')) {
-            let items = module.split('/');
+            const items = module.split('/');
 
             if (items.length < 2) {
                 throw new Error(`Bad module name ${module}.`);
             }
 
-            let mod = items[1];
+            const mod = items[1];
 
             part = 'modules/' + mod + '/' + part;
             path = items.slice(2).join('/');
@@ -180,7 +181,7 @@ class Transpiler {
      * @return {boolean}
      */
     #isToBeTranspiled(file) {
-        let contents = this.#getContents(file);
+        const contents = this.#getContents(file);
 
         return !contents.includes("\ndefine(") && contents.includes("\nexport ");
     }

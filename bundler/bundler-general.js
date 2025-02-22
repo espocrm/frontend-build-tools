@@ -72,23 +72,24 @@ class BundlerGeneral {
         }
     }
 
+    // noinspection JSUnusedGlobalSymbols
     /**
      * @return {Object.<string, string>}
      */
     bundle() {
-        let result = {};
-        let mapping = {};
+        const result = {};
+        const mapping = {};
         let files = [];
         let modules = [];
         let templateFiles = [];
-        let mainName = this.config.order[0];
+        const mainName = this.config.order[0];
 
         /** @var {Object.<string, string[]>} */
         const notBundledMap = {};
-        /** @var {Object.<string, string> */
+        /** @var {Object.<string, string>} */
         const moduleChunkMap = {};
         /** @var {Object.<string, string[]>} */
-        const chunkDirectDependenctModulesMap = {};
+        const chunkDirectDependentModulesMap = {};
 
         this.config.order.forEach((name, i) => {
             const data = this.#bundleChunk(name, i === 0, {
@@ -104,7 +105,7 @@ class BundlerGeneral {
 
             console.log(`  Chunk '${name}' done, ${data.files.length} files.`)
 
-            chunkDirectDependenctModulesMap[name] = data.directDependencyModules;
+            chunkDirectDependentModulesMap[name] = data.directDependencyModules;
 
             if (i > 0) {
                 for (const m of data.modules) {
@@ -139,7 +140,7 @@ class BundlerGeneral {
             const dependsOnChunks = [];
             const deps = [];
 
-            for (const m of chunkDirectDependenctModulesMap[name]) {
+            for (const m of chunkDirectDependentModulesMap[name]) {
                 const dependeeChunk = moduleChunkMap[m];
 
                 if (!dependeeChunk) {
