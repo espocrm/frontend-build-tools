@@ -92,6 +92,17 @@ class Transpiler {
         const module = this.#obtainModuleName(file);
 
         const result = babelCore.transformSync(this.#getContents(file), {
+            presets: [
+                [
+                    '@babel/preset-env',
+                    {
+                        targets: {
+                            chrome: '90',
+                            safari: '16',
+                        }
+                    }
+                ],
+            ],
             plugins: [
                 '@babel/plugin-transform-modules-amd',
                 [
