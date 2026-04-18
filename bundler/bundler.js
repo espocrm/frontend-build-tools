@@ -136,6 +136,10 @@ class Bundler {
      */
     #mapToTraspiledFiles(files) {
         return files.map(file => {
+            if (file.endsWith('.ts')) {
+                file = file.slice(0, -3) + '.js';
+            }
+
             return this.transpiledPath + '/' + file.slice(this.basePath.length + 1);
         });
     }
@@ -475,7 +479,7 @@ class Bundler {
      * @return {{deps: string[], name: string}|null}
      */
     #obtainModuleData(path) {
-        if (!this.#isClientJsFile(path)) {
+        if (!this.#isClientJsOrTsFile(path)) {
             return null;
         }
 
@@ -618,8 +622,8 @@ class Bundler {
      * @param {string} path
      * @return {boolean}
      */
-    #isClientJsFile(path) {
-        if (path.slice(-3) !== '.js') {
+    #isClientJsOrTsFile(path) {
+        if (path.slice(-3) !== '.js' && path.slice(-3) !== '.ts') {
             return false;
         }
 
@@ -651,7 +655,7 @@ class Bundler {
 
         sourceCode = this.#stripSourceMappingUrl(sourceCode);
 
-        if (!this.#isClientJsFile(path)) {
+        if (!this.#isClientJsOrTsFile(path)) {
             return sourceCode;
         }
 
