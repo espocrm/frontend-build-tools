@@ -57,7 +57,7 @@ class Transpiler {
      * }}
      */
     process() {
-        let allFiles = globSync(this.path + '/**/*.js')
+        let allFiles = globSync(this.path + '/**/*.{js,ts}')
             .map(file => file.replaceAll('\\', '/'));
 
         if (this.file) {
@@ -91,6 +91,8 @@ class Transpiler {
     #processFile(file) {
         const module = this.#obtainModuleName(file);
 
+        const isTs = file.endsWith('.ts');
+
         const result = babelCore.transformSync(this.#getContents(file), {
             presets: [
                 [
@@ -104,6 +106,7 @@ class Transpiler {
                 ],
             ],
             plugins: [
+                ...(isTs ? ['@babel/plugin-transform-typescript'] : []),
                 '@babel/plugin-transform-modules-amd',
                 [
                     '@babel/plugin-proposal-decorators',

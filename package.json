@@ -19,5 +19,8 @@
   "engines": {
     "npm": ">=8",
     "node": ">=20"
+  },
+  "devDependencies": {
+    "@babel/plugin-transform-typescript": "^7.28.6"
   }
 }

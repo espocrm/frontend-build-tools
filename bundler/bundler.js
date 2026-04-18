@@ -179,7 +179,11 @@ class Bundler {
      * @param {string[]} notBundledModules
      * @param {string[]|null} dependentOn
      * @param {boolean} [mapDependencies]
-     * @param {string[]} libs
+     * @param {{
+     *     src?: string,
+     *     bundle?: boolean,
+     *     amdId?: string,
+     * }[]} libs
      * @return {{
      *     files: string[],
      *     depModules: string[],
