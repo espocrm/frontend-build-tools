@@ -58,7 +58,8 @@ class Transpiler {
      */
     process() {
         let allFiles = globSync(this.path + '/**/*.{js,ts}')
-            .map(file => file.replaceAll('\\', '/'));
+            .map(file => file.replaceAll('\\', '/'))
+            .filter(it => !it.endsWith('.d.ts'));
 
         if (this.file) {
             const file = this.file.replaceAll('\\', '/');

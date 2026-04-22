@@ -163,7 +163,7 @@ class Bundler {
             files = files.concat(itemFiles);
         });
 
-        return files;
+        return files.filter(file => !file.endsWith('.d.ts'));
     }
 
     /**
@@ -623,7 +623,7 @@ class Bundler {
      * @return {boolean}
      */
     #isClientJsOrTsFile(path) {
-        if (path.slice(-3) !== '.js' && path.slice(-3) !== '.ts') {
+        if (path.slice(-3) !== '.js' && path.slice(-3) !== '.ts' && !path.endsWith('.d.ts')) {
             return false;
         }
 
