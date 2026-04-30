@@ -548,7 +548,7 @@ class Bundler {
      */
     #obtainModuleDeps(sourceFile, subjectId) {
         return sourceFile.statements
-            .filter(item => item.importClause && item.moduleSpecifier)
+            .filter(item => item.importClause && item.moduleSpecifier && !item.importClause?.isTypeOnly)
             .map(item => item.moduleSpecifier.text)
             .map(/** string */id => {
                 id = this.#normalizeIdPath(id, subjectId);
